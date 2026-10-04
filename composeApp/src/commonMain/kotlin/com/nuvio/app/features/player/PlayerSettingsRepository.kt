@@ -97,6 +97,8 @@ data class PlayerSettingsUiState(
     val iosContrast: Int = 0,
     val iosSaturation: Int = 0,
     val iosGamma: Int = 0,
+    val seekForwardIntervalSeconds: Int = 10,
+    val seekBackwardIntervalSeconds: Int = 10,
 )
 
 object PlayerSettingsRepository {
@@ -168,6 +170,8 @@ object PlayerSettingsRepository {
     private var iosContrast = 0
     private var iosSaturation = 0
     private var iosGamma = 0
+    private var seekForwardIntervalSeconds = 10
+    private var seekBackwardIntervalSeconds = 10
 
     fun ensureLoaded() {
         if (hasLoaded) return
@@ -244,6 +248,8 @@ object PlayerSettingsRepository {
         iosContrast = 0
         iosSaturation = 0
         iosGamma = 0
+        seekForwardIntervalSeconds = 10
+        seekBackwardIntervalSeconds = 10
         publish()
     }
 
@@ -387,6 +393,8 @@ object PlayerSettingsRepository {
         iosContrast = PlayerSettingsStorage.loadIosContrast() ?: 0
         iosSaturation = PlayerSettingsStorage.loadIosSaturation() ?: 0
         iosGamma = PlayerSettingsStorage.loadIosGamma() ?: 0
+        seekForwardIntervalSeconds = (PlayerSettingsStorage.loadSeekForwardIntervalSeconds() ?: 10).coerceIn(5, 120)
+        seekBackwardIntervalSeconds = (PlayerSettingsStorage.loadSeekBackwardIntervalSeconds() ?: 10).coerceIn(5, 120)
         publish()
     }
 
@@ -762,6 +770,24 @@ object PlayerSettingsRepository {
         PlayerSettingsStorage.saveStreamAutoPlayReuseBingeGroup(enabled)
     }
 
+    fun setSeekForwardIntervalSeconds(seconds: Int) {
+        ensureLoaded()
+        val normalized = seconds.coerceIn(5, 120)
+        if (seekForwardIntervalSeconds == normalized) return
+        seekForwardIntervalSeconds = normalized
+        publish()
+        PlayerSettingsStorage.saveSeekForwardIntervalSeconds(normalized)
+    }
+
+    fun setSeekBackwardIntervalSeconds(seconds: Int) {
+        ensureLoaded()
+        val normalized = seconds.coerceIn(5, 120)
+        if (seekBackwardIntervalSeconds == normalized) return
+        seekBackwardIntervalSeconds = normalized
+        publish()
+        PlayerSettingsStorage.saveSeekBackwardIntervalSeconds(normalized)
+    }
+
     fun setNextEpisodeThresholdMode(mode: NextEpisodeThresholdMode) {
         ensureLoaded()
         if (nextEpisodeThresholdMode == mode) return
@@ -1041,6 +1067,8 @@ object PlayerSettingsRepository {
             iosContrast = iosContrast,
             iosSaturation = iosSaturation,
             iosGamma = iosGamma,
+            seekForwardIntervalSeconds = seekForwardIntervalSeconds,
+            seekBackwardIntervalSeconds = seekBackwardIntervalSeconds,
         )
     }
 
